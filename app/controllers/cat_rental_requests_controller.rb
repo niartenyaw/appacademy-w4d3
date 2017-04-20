@@ -1,4 +1,7 @@
 class CatRentalRequestsController < ApplicationController
+
+  before_action :check_ownership, only: [:approve, :deny]
+
   def approve
     current_cat_rental_request.approve!
     redirect_to cat_url(current_cat)
@@ -36,5 +39,13 @@ class CatRentalRequestsController < ApplicationController
   def cat_rental_request_params
     params.require(:cat_rental_request)
       .permit(:cat_id, :end_date, :start_date, :status)
+  end
+
+  def check_ownership
+    cat = Cat.find(params[:id])
+    unless cat.user_id == current_user.id
+      flash[:error] = "You don't own the cat!"
+      redirect_to cat_url(cat)
+    end
   end
 end
